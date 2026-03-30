@@ -1,60 +1,48 @@
-// ============================================================
-//  SHUB — script.js
-//  Navigation multi-pages + interactions
-// ============================================================
-
-// ── Navigation entre pages ───────────────────────────────────
-function showPage(pageId) {
+// ── Navigation ────────────────────────────────
+function showPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-
-  const target = document.getElementById('page-' + pageId);
-  if (target) {
-    target.classList.add('active');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  const activeLink = document.querySelector(`.nav-link[onclick*="${pageId}"]`);
-  if (activeLink) activeLink.classList.add('active');
-
+  const target = document.getElementById('page-' + id);
+  if (target) { target.classList.add('active'); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+  const link = document.querySelector(`.nav-link[onclick*="${id}"]`);
+  if (link) link.classList.add('active');
   closeMenu();
+  setTimeout(observeAll, 50);
 }
 
-// ── Menu burger mobile ────────────────────────────────────────
+// ── Burger ────────────────────────────────────
 function toggleMenu() {
-  const links = document.getElementById('nav-links');
-  const burger = document.getElementById('burger');
-  links.classList.toggle('open');
-  burger.classList.toggle('open');
+  document.getElementById('nav-links').classList.toggle('open');
+  document.getElementById('burger').classList.toggle('open');
 }
-
 function closeMenu() {
   document.getElementById('nav-links').classList.remove('open');
   document.getElementById('burger').classList.remove('open');
 }
-
-// ── Scroll navbar shadow ──────────────────────────────────────
-window.addEventListener('scroll', () => {
-  const nav = document.getElementById('navbar');
-  if (window.scrollY > 20) {
-    nav.style.boxShadow = '0 2px 24px rgba(0,0,0,0.4)';
-  } else {
-    nav.style.boxShadow = 'none';
-  }
-});
-
-// ── Fermer menu si clic en dehors ────────────────────────────
-document.addEventListener('click', (e) => {
+document.addEventListener('click', e => {
   const nav = document.getElementById('nav-links');
   const burger = document.getElementById('burger');
-  if (nav && nav.classList.contains('open')) {
-    if (!nav.contains(e.target) && !burger.contains(e.target)) {
-      closeMenu();
-    }
-  }
+  if (nav && nav.classList.contains('open') && !nav.contains(e.target) && !burger.contains(e.target)) closeMenu();
 });
 
-// ── Init ─────────────────────────────────────────────────────
+// ── Navbar scroll ──────────────────────────────
+window.addEventListener('scroll', () => {
+  document.getElementById('navbar').style.boxShadow = window.scrollY > 10 ? '0 4px 32px rgba(0,0,0,.5)' : 'none';
+});
+
+// ── Reveal au scroll ──────────────────────────
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+function observeAll() {
+  document.querySelectorAll('.page.active .reveal, .page.active .reveal-up').forEach(el => {
+    if (!el.classList.contains('visible')) observer.observe(el);
+  });
+}
+
+// ── Init ──────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   showPage('accueil');
+  setTimeout(observeAll, 100);
 });
